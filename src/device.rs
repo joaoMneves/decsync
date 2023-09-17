@@ -23,7 +23,7 @@ pub struct Device {
     permissions: Vec<(proto, Permission)>,
     // Syncer: Vec<impl syncer> ex: a device maybe syncable by syncthing or google cloud but not by filecoin
 }
-/// Devices can be Trusted(ex: your on devices synced by syncthing) or untrusted(ex: cloud seevices like google drive or p2p networks)
+/// Devices can be Trusted(ex: your on devices synced by syncthing) or untrusted(ex: cloud services like google drive or p2p networks) obs: maybe add it to syncer config
 pub enum DeviceTrust {
     Untrusted { keep_state: bool },
     Trusted,

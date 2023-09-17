@@ -6,7 +6,7 @@ use openssl::{
     hash::{Hasher, MessageDigest},
     nid::Nid,
     pkey::{self, PKey, Private, Public},
-    sign,
+    sign::Signer,
     symm::Cipher,
 };
 
@@ -61,10 +61,11 @@ pub enum Changes<T> {
     Removed(T),
     Added(T),
 }
+pub type differences<'a> = Vec<Changes<&'a str>>;
 /// function used to return the differences between two files
-pub fn changes<'a>(original: &'a [u8], new: &'a [u8]) -> Vec<Changes<&'a u8>> {
+pub fn changes<'a>(original: &'a str, new: &'a str) -> differences<'a> {
     // let result =
-    diff::slice(original, new)
+    diff::lines(original, new)
         .iter()
         .filter_map(|s| match s {
             diff::Result::Left(r) => Some(Changes::Removed(*r)),
@@ -73,7 +74,16 @@ pub fn changes<'a>(original: &'a [u8], new: &'a [u8]) -> Vec<Changes<&'a u8>> {
         })
         .collect()
 }
+pub type signature = Vec<u8>;
+// TODO: sign
+pub fn sign<T>(data: T, key: &PKey<Private>) -> Vec<u8> {
+    unimplemented!();
+}
 
+// TODO: timestamp
+//   timestamp example: let time = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis();
+
+// TODO: encript/envelope
 // envelope
 // pub fn envelope(data: &[u8], key: PKey<Public>) -> Result<Vec<u8>, ErrorStack> {
 //     let cipher = Cipher::aes_256_cbc();
@@ -87,3 +97,25 @@ pub fn changes<'a>(original: &'a [u8], new: &'a [u8]) -> Vec<Changes<&'a u8>> {
 
 //     Ok(encripted)
 // }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_changes() {
+        let original = "foo\nbar\nbaz\nquux";
+        let new = "foo\nbaz\nbar\nquux";
+
+        let changes = changes(original, new);
+        for diff in &changes {
+            match diff {
+                Changes::Added(a) => println!("+{a}"),
+                Changes::Removed(r) => println!("-{r}"),
+            }
+        }
+        assert_eq!(
+            changes,
+            vec![Changes::Removed("bar"), Changes::Added("bar")]
+        )
+    }
+}
